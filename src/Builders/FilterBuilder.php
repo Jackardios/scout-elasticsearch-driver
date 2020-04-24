@@ -5,6 +5,7 @@ namespace ScoutElastic\Builders;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Laravel\Scout\Builder;
+use ScoutElastic\AggregationRule;
 
 class FilterBuilder extends Builder
 {
@@ -454,6 +455,10 @@ class FilterBuilder extends Builder
         foreach ($aggregationRules as $rule) {
             if (is_callable($rule)) {
                 $payloadCollection[] = call_user_func($rule);
+            } else if ($rule instanceof AggregationRule) {
+                if ($aggregationPayload = $rule->buildAggregationPayload()) {
+                    $payloadCollection[] = $aggregationPayload;
+                }
             } else {
                 $ruleEntity = new $rule;
                 if ($aggregationPayload = $ruleEntity->buildAggregationPayload()) {
@@ -468,7 +473,7 @@ class FilterBuilder extends Builder
     /**
      * Adds rule to the aggregation rules of the builder.
      *
-     * @param \ScoutElastic\AggregationRule|callable $rule
+     * @param \ScoutElastic\AggregationRule|callable|string $rule
      * @return $this
      */
     public function aggregationRule($rule)
