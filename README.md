@@ -52,7 +52,7 @@ The package has been tested in the following configuration:
 Use composer to install the package:
 
 ```
-composer require babenkoivan/scout-elasticsearch-driver
+composer require jackardios/scout-elasticsearch-driver
 ```
 
 If you are using Laravel version &lt;= 5.4 or [the package discovery](https://laravel.com/docs/5.5/packages#package-discovery)
