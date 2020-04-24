@@ -47,6 +47,16 @@ class FilterBuilder extends Builder
     public $select = [];
 
     /**
+     * @var array
+     */
+    public $aggregations = [];
+
+    /**
+     * @var array
+     */
+    public $aggregationRules = [];
+
+    /**
      * The min_score parameter.
      *
      * @var string
@@ -427,6 +437,43 @@ class FilterBuilder extends Builder
             ],
         ];
 
+        return $this;
+    }
+
+    /**
+     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/returning-only-agg-results.html
+     *
+     * @param int $size
+     * @return $this
+     */
+    public function aggregate(int $size = 0)
+    {
+        $this->take($size);
+        $payloadCollection = [];
+        $aggregationRules = $this->aggregationRules ?: $this->model->getAggregationRules();
+        foreach ($aggregationRules as $rule) {
+            if (is_callable($rule)) {
+                $payloadCollection[] = call_user_func($rule);
+            } else {
+                $ruleEntity = new $rule;
+                if ($aggregationPayload = $ruleEntity->buildAggregationPayload()) {
+                    $payloadCollection[] = $aggregationPayload;
+                }
+            }
+        }
+        $this->aggregations = array_reduce($payloadCollection, 'array_merge', []);
+        return $this->engine()->search($this);
+    }
+
+    /**
+     * Adds rule to the aggregation rules of the builder.
+     *
+     * @param \ScoutElastic\AggregationRule|callable $rule
+     * @return $this
+     */
+    public function aggregationRule($rule)
+    {
+        $this->aggregationRules[] = $rule;
         return $this;
     }
 

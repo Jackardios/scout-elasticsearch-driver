@@ -31,8 +31,8 @@ trait Searchable
     {
         static $indexConfigurator;
 
-        if (! $indexConfigurator) {
-            if (! isset($this->indexConfigurator) || empty($this->indexConfigurator)) {
+        if (!$indexConfigurator) {
+            if (!isset($this->indexConfigurator) || empty($this->indexConfigurator)) {
                 throw new Exception(sprintf(
                     'An index configurator for the %s model is not specified.',
                     __CLASS__
@@ -71,6 +71,15 @@ trait Searchable
     {
         return isset($this->searchRules) && count($this->searchRules) > 0 ?
             $this->searchRules : [SearchRule::class];
+    }
+
+    /**
+     * @return array
+     */
+    public function getAggregationRules()
+    {
+        return isset($this->aggregationRules) && count($this->aggregationRules) > 0 ?
+            $this->aggregationRules : [AggregationRule::class];
     }
 
     /**

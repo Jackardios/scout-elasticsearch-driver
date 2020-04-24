@@ -136,6 +136,7 @@ class ElasticEngine extends Engine
                 ->setIfNotEmpty('body._source', $builder->select)
                 ->setIfNotEmpty('body.collapse.field', $builder->collapse)
                 ->setIfNotEmpty('body.sort', $builder->orders)
+                ->setIfNotEmpty('body.aggs', $builder->aggregations)
                 ->setIfNotEmpty('body.explain', $options['explain'] ?? null)
                 ->setIfNotEmpty('body.profile', $options['profile'] ?? null)
                 ->setIfNotEmpty('body.min_score', $builder->minScore)
@@ -143,7 +144,7 @@ class ElasticEngine extends Engine
                 ->setIfNotNull('body.size', $builder->limit);
 
             foreach ($builder->wheres as $clause => $filters) {
-                $clauseKey = 'body.query.bool.filter.bool.'.$clause;
+                $clauseKey = 'body.query.bool.filter.bool.' . $clause;
 
                 $clauseValue = array_merge(
                     $payload->get($clauseKey, []),
