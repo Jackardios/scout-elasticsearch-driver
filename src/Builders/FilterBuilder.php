@@ -442,6 +442,29 @@ class FilterBuilder extends Builder
     }
 
     /**
+     * @param array[\ScoutElastic\AggregationRule] $aggregations
+     * @return array
+     */
+    protected function formatAggregations(array $aggregations): array
+    {
+        $result = [];
+        $aggregationRules = $this->aggregationRules ?: $this->model->getAggregationRules();
+
+        foreach ($aggregationRules as $rule) {
+            $name = $rule->name;
+            if ($rule instanceof AggregationRule) {
+                if (isset($aggregations[$name])) {
+                    $result[$name] = $rule->format($aggregations[$name]);
+                }
+            } else {
+                throw new \Exception("aggregation rule should be instance of AggregationRule");
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/returning-only-agg-results.html
      *
      * @param int $size
@@ -453,30 +476,25 @@ class FilterBuilder extends Builder
         $payloadCollection = [];
         $aggregationRules = $this->aggregationRules ?: $this->model->getAggregationRules();
         foreach ($aggregationRules as $rule) {
-            if (is_callable($rule)) {
-                $payloadCollection[] = call_user_func($rule);
-            } else if ($rule instanceof AggregationRule) {
+            if ($rule instanceof AggregationRule) {
                 if ($aggregationPayload = $rule->buildAggregationPayload()) {
-                    $payloadCollection[] = $aggregationPayload;
+                    $payloadCollection[$rule->name] = $aggregationPayload;
                 }
             } else {
-                $ruleEntity = new $rule;
-                if ($aggregationPayload = $ruleEntity->buildAggregationPayload()) {
-                    $payloadCollection[] = $aggregationPayload;
-                }
+                throw new \Exception("aggregation rule should be instance of AggregationRule");
             }
         }
-        $this->aggregations = array_reduce($payloadCollection, 'array_merge', []);
-        return $this->engine()->search($this);
+        $searchResponse = $this->engine()->search($this);
+        return $this->formatAggregations($searchResponse['aggregations'] ?? []);
     }
 
     /**
      * Adds rule to the aggregation rules of the builder.
      *
-     * @param \ScoutElastic\AggregationRule|callable|string $rule
+     * @param \ScoutElastic\AggregationRule $rule
      * @return $this
      */
-    public function aggregationRule($rule)
+    public function aggregationRule(AggregationRule $rule)
     {
         $this->aggregationRules[] = $rule;
         return $this;

@@ -78,8 +78,8 @@ trait Searchable
      */
     public function getAggregationRules()
     {
-        return isset($this->aggregationRules) && count($this->aggregationRules) > 0 ?
-            $this->aggregationRules : [AggregationRule::class];
+        return isset($this->aggregationRules) && is_array($this->aggregationRules) ?
+            $this->aggregationRules : [];
     }
 
     /**
