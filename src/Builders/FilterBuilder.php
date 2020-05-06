@@ -442,10 +442,10 @@ class FilterBuilder extends Builder
     }
 
     /**
-     * @param array[\ScoutElastic\AggregationRule] $aggregations
+     * @param array $aggregationsResponse
      * @return array
      */
-    protected function formatAggregations(array $aggregations): array
+    protected function formatAggregationsResponse(array $aggregationsResponse): array
     {
         $result = [];
         $aggregationRules = $this->aggregationRules ?: $this->model->getAggregationRules();
@@ -453,8 +453,8 @@ class FilterBuilder extends Builder
         foreach ($aggregationRules as $rule) {
             $name = $rule->name;
             if ($rule instanceof AggregationRule) {
-                if (isset($aggregations[$name])) {
-                    $result[$name] = $rule->format($aggregations[$name]);
+                if (isset($aggregationsResponse[$name])) {
+                    $result[$name] = $rule->format($aggregationsResponse[$name]);
                 }
             } else {
                 throw new \Exception("aggregation rule should be instance of AggregationRule");
@@ -484,8 +484,9 @@ class FilterBuilder extends Builder
                 throw new \Exception("aggregation rule should be instance of AggregationRule");
             }
         }
+        $this->aggregations = $payloadCollection;
         $searchResponse = $this->engine()->search($this);
-        return $this->formatAggregations($searchResponse['aggregations'] ?? []);
+        return $this->formatAggregationsResponse($searchResponse['aggregations'] ?? []);
     }
 
     /**
