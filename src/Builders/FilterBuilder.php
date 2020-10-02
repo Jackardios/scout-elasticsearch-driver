@@ -516,6 +516,19 @@ class FilterBuilder extends Builder
 
         return $this;
     }
+    
+    /**
+     * Add a raw order clause.
+     *
+     * @param array $payload
+     * @return $this
+     */
+    public function orderRaw(array $payload)
+    {
+        $this->orders[] = $payload;
+
+        return $this;
+    }
 
     /**
      * Explain the request.
